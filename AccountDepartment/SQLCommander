@@ -1,0 +1,230 @@
+ DROP TABLE employee;
+DROP table employee_transaction;
+DROP table employee_balance;
+ drop sequence employee_sequence;
+ DROP SEQUENCE transaction_sequence;
+
+DROP SEQUENCE employee_balanace_sequence;
+
+
+SELECT * FROM employee_balance
+  
+SELECT * FROM employee_transaction
+
+SELECT * FROM employee where UNAME='aaidith';
+
+
+       1 Aparna Aidith aaidith  aa7944  Y
+
+    CREATE TABLE Employee (
+    employee_id NUMBER(10) NOT NULL,
+    employee_name varchar(25) NOT NULL,
+    UNAME varchar(25),
+    UPWD varchar(25),
+    ISADMIN varchar(2),
+ 
+    PRIMARY KEY (employee_id)
+    );
+
+DELETE TABLE Employee
+CREATE SEQUENCE employee_sequence 
+            START WITH 100
+            INCREMENT BY 1
+            CACHE 100 ;
+            
+DROP SEQUENCE employee_sequence;
+
+INSERT INTO employee(employee_id,employee_name,UNAME,UPWD,ISADMIN) VALUES ( employee_sequence.nextval,'Aparna Aidith','aaidith','aa7944','Y');
+
+INSERT INTO employee(employee_id,employee_name,UNAME,UPWD,ISADMIN) VALUES ( employee_sequence.nextval,'Anas Malik','amalik','ag69357','N');
+
+INSERT INTO employee(employee_id,employee_name,UNAME,UPWD,ISADMIN) VALUES ( employee_sequence.nextval,'Nethra Aidith','naidith','na69357','N');
+
+INSERT INTO employee(employee_id,employee_name,UNAME,UPWD,ISADMIN) VALUES ( employee_sequence.nextval,'Leena Aidith','laidith','la69357','N');
+
+INSERT INTO employee(employee_id,employee_name,UNAME,UPWD,ISADMIN) VALUES ( employee_sequence.nextval,'Aidith K.S','aidithks','la6357','N');
+
+
+
+
+
+CREATE TABLE employee_transaction(
+    transaction_id NUMBER(20) NOT NULL,
+    from_employeeId NUMBER(20) NOT NULL,
+    to_employeeId NUMBER(20),
+    given_points NUMBER(20),
+    employee_message VARCHAR2(100),
+    transaction_date DATE );
+    
+    
+ALTER TABLE employee_transaction ADD (
+    CONSTRAINT transaction_pk PRIMARY KEY (transaction_id));
+    
+    
+    
+ALTER TABLE employee_transaction ADD (
+    CONSTRAINT transaction_fk FOREIGN KEY (from_employeeId) REFERENCES employee(employee_id));
+    
+    
+    
+    CREATE SEQUENCE transaction_sequence 
+            START WITH 100
+            INCREMENT BY 1
+            NOCACHE ;
+   --fail         
+            
+CREATE OR REPLACE TRIGGER transction_date_trigger
+BEFORE INSERT ON employee_transaction 
+FOR EACH ROW
+BEGIN
+   :NEW.transaction_date := SYSDATE;
+  
+END;
+/
+
+
+
+
+CREATE OR REPLACE procedure insert_employee_transaction
+( t_from_employeeId in NUMBER,
+  t_to_employeeId in NUMBER,
+  t_given_points in NUMBER,
+  t_employee_message IN VARCHAR2,
+  t_transaction_date IN DATE
+)
+is
+begin
+  INSERT INTO employee_transaction (
+        transaction_id,
+        from_employeeId,
+        to_employeeId,
+        given_points,
+        employee_message,
+        transaction_date)
+        VALUES (
+        transaction_sequence.nextval,
+        t_from_employeeId,
+        t_to_employeeId,
+        t_given_points,
+        t_employee_message,'');
+        
+  
+    
+   
+   
+  
+end insert_employee_transaction;
+/
+--------------------------------------------
+
+CREATE TABLE employee_balance(
+            balance_id NUMBER(20) NOT NULL,
+            employee_id NUMBER(20) NOT NULL,
+            current_balance NUMBER(20),
+            given_points NUMBER(20),
+            received_points NUMBER(20),
+            redeemed_flag VARCHAR2(20),
+            redeemed_amount NUMBER(20),
+            redeemed_data DATE);
+            
+            CREATE SEQUENCE employee_balanace_sequence 
+            START WITH 100
+            INCREMENT BY 1
+            CACHE 100 ; 
+            
+            DROP SEQUENCE employee_balanace_sequence 
+            ALTER TABLE employee_balance ADD (
+    CONSTRAINT balance_pk PRIMARY KEY(balance_id));
+            
+    
+    
+ALTER TABLE employee_balance ADD (
+    CONSTRAINT balance_fk FOREIGN KEY (employee_id) REFERENCES employee(employee_id))
+    
+    select * from Employee_balance
+    
+    INSERT INTO employee_balance ( balance_id,employee_id,current_balance,given_points,received_points,redeemed_flag,redeemed_amount,redeemed_data)
+    VALUES(employee_balanace_sequence.NEXTVAL,100,1000,0,10050,'N',0,'');
+
+    
+    INSERT INTO employee_balance ( balance_id,employee_id,current_balance,given_points,received_points,redeemed_flag,redeemed_amount,redeemed_data)
+    VALUES(employee_balanace_sequence.NEXTVAL,104,1000,0,10050,'N',0,'');
+
+INSERT INTO employee_balance ( balance_id,employee_id,current_balance,given_points,received_points,redeemed_flag,redeemed_amount,redeemed_data)
+    VALUES(employee_balanace_sequence.NEXTVAL,101,1000,0,0,'N',0,'');
+    
+INSERT INTO employee_balance ( balance_id,employee_id,current_balance,given_points,received_points,redeemed_flag,redeemed_amount,redeemed_data)
+    VALUES(employee_balanace_sequence.NEXTVAL,102,1000,0,0,'N',0,'');
+    
+INSERT INTO employee_balance ( balance_id,employee_id,current_balance,given_points,received_points,redeemed_flag,redeemed_amount,redeemed_data)
+    VALUES(employee_balanace_sequence.NEXTVAL,103,1000,0,0,'N',0,'');
+    
+            
+
+    
+    
+CREATE OR REPLACE  PROCEDURE given_and_received_proc(
+                                             from_employee_id_in IN NUMBER,
+                                             to_employee_id_in IN NUMBER,
+                                             bal_in IN NUMBER)
+IS
+  from_given_points number(20);
+  to_received_points number(20);
+  from_balance_amount number(20);
+  to_balance_amount number(20);
+BEGIN
+
+    select current_balance
+    into from_balance_amount
+    from employee_balance 
+    where employee_id = from_employee_id_in;
+    
+    select current_balance
+    into to_balance_amount
+    from employee_balance 
+    where employee_id = to_employee_id_in;
+    
+    
+    select given_points
+    into from_given_points
+    from employee_balance
+    where employee_id = from_employee_id_in;
+    
+    select received_points
+    into to_received_points
+    from employee_balance
+    where employee_id = to_employee_id_in;
+
+    if from_balance_amount < bal_in then
+        dbms_output.put_line('The amount entered is more than the amount balance');
+    else
+        update employee_balance
+        set given_points = from_given_points + bal_in
+        where employee_id = from_employee_id_in;
+        
+        
+        update employee_balance
+        set current_balance = from_balance_amount - bal_in 
+        where employee_id = from_employee_id_in;
+        
+    end if; 
+    
+    if to_balance_amount < bal_in then
+        dbms_output.put_line('The amount entered is more than the amount balance');
+    else
+    
+        update employee_balance
+        set received_points = to_received_points + bal_in
+        where employee_id = to_employee_id_in;
+        
+        
+        update employee_balance
+        set current_balance = to_balance_amount + bal_in
+        where employee_id = to_employee_id_in ;
+    end if;
+  
+
+  dbms_output.put_line('Money has been withdrawn successfully');
+END;
+/
+    
